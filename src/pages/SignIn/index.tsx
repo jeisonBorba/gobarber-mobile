@@ -44,8 +44,6 @@ const SignIn: React.FC = () => {
 
   const { signIn, user } = useAuth();
 
-  console.log(user);
-
   const navigation = useNavigation();
 
   const handleSignIn = useCallback(
@@ -72,8 +70,6 @@ const SignIn: React.FC = () => {
         if (error instanceof Yup.ValidationError) {
           const errors = getValidationErrors(error);
           formRef.current?.setErrors(errors);
-
-          console.log(errors);
 
           return;
         }
