@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -31,6 +31,8 @@ import {
   SectionContent,
   Hour,
   HourText,
+  CreateAppointmentButton,
+  CreateAppointmentButtonText,
 } from './styles';
 
 interface RouteParams {
@@ -62,7 +64,7 @@ const CreateAppointment: React.FC = () => {
   const [availability, setAvailability] = useState<AvailabilityItem[]>([]);
 
   const { user } = useAuth();
-  const { goBack } = useNavigation();
+  const { goBack, navigate } = useNavigation();
 
   useEffect(() => {
     api.get('providers').then((response) => {
@@ -110,6 +112,25 @@ const CreateAppointment: React.FC = () => {
   const handleSelectHour = useCallback((hour: number) => {
     setSelectedHour(hour);
   }, []);
+
+  const handleCreateAppointment = useCallback(() => {
+    const date = new Date(selectedDate);
+    date.setHours(selectedHour);
+    date.setMinutes(0);
+
+    api
+      .post('appointments', {
+        provider_id: selectedProvider,
+        date,
+      })
+      .then(() => navigate('AppointmentCreated', { date: date.getTime() }))
+      .catch(() => {
+        Alert.alert(
+          'Erro ao criar agendamento',
+          'Ocorreu um erro ao realizar o agendamento, teste novamente!'
+        );
+      });
+  }, [navigate, selectedDate, selectedHour, selectedProvider]);
 
   // criar um valor memorizado e que pode ser recalculado de acordo com o estado de outra variavel
   const morningAvailability = useMemo(() => {
@@ -231,6 +252,10 @@ const CreateAppointment: React.FC = () => {
             </SectionContent>
           </Section>
         </Schedule>
+
+        <CreateAppointmentButton onPress={handleCreateAppointment}>
+          <CreateAppointmentButtonText>Agendar</CreateAppointmentButtonText>
+        </CreateAppointmentButton>
       </Content>
     </Container>
   );
